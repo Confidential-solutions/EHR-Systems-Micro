@@ -13,7 +13,6 @@
     "test:coverage": "ng test --code-coverage",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
-    "e2e": "ng e2e",
     "analyze": "source-map-explorer 'dist/**/*.js'",
     "extract-i18n": "ng extract-i18n"
   },
@@ -32,7 +31,6 @@
     "@fullcalendar/daygrid": "^6.1.0",
     "@fullcalendar/interaction": "^6.1.0",
     "@fullcalendar/list": "^6.1.0",
-    "@fullcalendar/react": "^6.1.0",
     "@fullcalendar/timegrid": "^6.1.0",
     "@ngrx/effects": "^18.0.0",
     "@ngrx/entity": "^18.0.0",
