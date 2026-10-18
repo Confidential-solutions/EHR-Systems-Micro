@@ -20,10 +20,9 @@ build/
 
 # Node/npm
 node_modules/
-package-lock.json
-yarn.lock
 npm-debug.log*
 yarn-error.log*
+# Do NOT ignore lockfiles — commit package-lock.json / yarn.lock / pnpm-lock.yaml for reproducible installs
 
 # .NET
 .vs/
@@ -31,11 +30,16 @@ yarn-error.log*
 *.suo
 .nuget/
 
-# Environment
+# Environment / secrets (never commit real values)
 .env
 .env.local
 .env.*.local
+.env.development
 .env.development.local
+.env.production
+.env.staging
+.env.*
+!.env.example
 
 # Docker
 .dockerignore
@@ -63,6 +67,11 @@ backend/db/migrations/*.sql
 backend/db/rollback/
 
 # Secrets (never commit these!)
-appsettings.*.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
 secrets.json
 launchSettings.json
+**/secrets/
+*.pem
+*.key
