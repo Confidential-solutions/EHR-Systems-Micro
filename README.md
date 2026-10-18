@@ -2,15 +2,14 @@
 
 # 🏥 Modern EHR Platform
 
-**Enterprise-grade Electronic Health Records system built for the modern healthcare era.**
+**Electronic Health Records system — microservices backend + Angular frontend.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Angular](https://img.shields.io/badge/Angular-18-red.svg)](https://angular.io)
 [![.NET](https://img.shields.io/badge/.NET-8-purple.svg)](https://dotnet.microsoft.com)
-[![HIPAA](https://img.shields.io/badge/HIPAA-Compliant-green.svg)](./docs/SECURITY.md)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](./devops/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](./EHR-System/)
 
-[📖 Docs](#-documentation) · [🚀 Quick Start](#-quick-start) · [🏗 Architecture](#-architecture) · [🔐 Security](#-security--compliance) · [🤝 Contributing](./docs/CONTRIBUTING.md)
+[📖 Docs](#-documentation) · [🚀 Quick Start](#-quick-start) · [🏗 Architecture](#-architecture) · [🔐 Security](#-security--compliance)
 
 </div>
 
@@ -18,45 +17,47 @@
 
 ## ✨ Overview
 
-Modern EHR Platform is a **production-ready, HIPAA-compliant** Electronic Health Records system featuring a clean microservices backend and a responsive Angular frontend. It covers the full clinical workflow — from patient registration and scheduling through medical coding, billing, and analytics.
+Modern EHR Platform is a microservices-oriented Electronic Health Records system with an Angular 18 frontend and ASP.NET Core 8 services. It targets the clinical workflow — patient registration, scheduling, records, coding, billing, and analytics.
 
-**Key capabilities:**
+**This repository is under active hardening.** Treat security and compliance claims as **targets**, not guarantees, until secrets, TLS, CORS, and audit controls are verified in your environment.
+
+**Key capabilities (in progress):**
 
 | Area | Details |
 |:--- |:--- |
 | 🧑‍⚕️ Patient Management | Demographics, medical history, timelines |
 | 📅 Appointments | Scheduling, reminders, calendar integration |
 | 📋 Medical Records | SOAP notes, vitals, ICD-10 diagnoses, CPT procedures |
-| 💊 Prescriptions | eRx, medication history, interaction checking |
-| 🧪 Labs & Imaging | Results, trends, PDF viewer |
-| 💰 Billing & Insurance | Claims submission, payment tracking, insurance verification |
-| 📊 Analytics | Population health, compliance KPIs, dashboards |
-| 🌍 i18n & RTL | English + Arabic, full RTL layout support |
+| 💊 Prescriptions | eRx, medication history |
+| 🧪 Labs & Imaging | Results, trends |
+| 💰 Billing & Insurance | Claims, payments |
+| 📊 Analytics | Dashboards |
+| 🌍 i18n & RTL | English + Arabic |
 
 ---
 
 ## 🏗 Architecture
 
 ```
-modern-ehr-platform/
-├── frontend/          # Angular 18 SPA (standalone components, Signals)
-├── backend/           # ASP.NET Core 8 Microservices (Clean Architecture)
-├── devops/            # Docker, Kubernetes, Terraform, GitHub Actions
-└── docs/              # All project documentation (see below)
+EHR-Systems-Micro/
+├── frontend/                 # Angular 18 SPA
+├── EHR-System/               # ASP.NET Core 8 microservices + building blocks
+│   ├── services/             # Patient, …
+│   ├── building-blocks/
+│   └── deployment/           # Docker / K8s assets (expanding)
+├── docs/                     # Project documentation
+├── docker-compose.yml        # Root local orchestration (see Quick Start)
+└── .env.example              # Template for local secrets (copy → .env.development)
 ```
 
-**Full architecture detail** → [`docs/Backend/Architectures/`](./docs/Backend/Architectures/)
+**Full architecture detail** → [`docs/Architecture/`](./docs/Architecture/) and [`docs/Backend/`](./docs/Backend/)
 
 ### Microservices
 
 | Service | Responsibility |
 |:--- |:--- |
-| `PatientService` | Patient records, demographics |
-| `AppointmentService` | Scheduling engine |
-| `MedicalRecordService` | Clinical notes, diagnoses |
-| `PrescriptionService` | Medication & eRx |
-| `BillingService` | Claims & payments |
-| `AuthService` | Identity, JWT, RBAC |
+| `Patient` | Patient records, demographics |
+| (others) | Appointment, MedicalRecord, Prescription, Billing, Auth — see `EHR-System/services/` |
 
 ---
 
@@ -66,42 +67,51 @@ modern-ehr-platform/
 
 - **Node.js** 18+ & npm 9+
 - **Docker** & Docker Compose
-- **.NET 8 SDK**
+- **.NET 8 SDK** (for service-level development)
 
-### Run Locally
+### Configure secrets (required)
 
 ```bash
-# 1. Clone
-git clone https://github.com/Mostafa-SAID7/EHR-Systems.git
-cd EHR-Systems
-
-# 2. Start everything (recommended)
-docker-compose up -d
-# Frontend → http://localhost:4200
-# API      → http://localhost:5000
-# Swagger  → http://localhost:5000/swagger
-
-# --- OR run individually ---
-
-# Frontend only
-cd frontend && npm install && npm start
-
-# Backend only
-cd backend && dotnet restore && dotnet run --project src/EHRPlatform.Api
+git clone https://github.com/Confidential-solutions/EHR-Systems-Micro.git
+cd EHR-Systems-Micro
+cp .env.example .env.development
+# Edit .env.development — set strong unique passwords and JWT material
 ```
 
-### Run Tests
+`.env.development` is **gitignored**. Never commit real credentials.
+
+### Run locally
 
 ```bash
-# Angular unit tests
+# Infrastructure + services (adjust compose as your stack grows)
+docker compose --env-file .env.development up -d
+
+# Frontend
+cd frontend && npm install && npm start
+# → http://localhost:4200
+
+# Patient API health (example)
+curl http://localhost:5000/health   # or the mapped Patient port
+```
+
+Optional Makefile targets (if present):
+
+```bash
+make up      # docker compose up -d
+make down    # docker compose down
+```
+
+### Run tests
+
+```bash
+# Angular unit tests (Jasmine / Karma)
 cd frontend && npm test
 
-# Angular E2E tests
-cd frontend && npm run e2e
-
-# .NET backend tests
-cd backend && dotnet test
+# .NET backend tests (per service)
+cd EHR-System/services/Patient && dotnet test
 ```
+
+> **E2E:** Cypress/Playwright are not wired yet. The previous `ng e2e` script was removed until a runner is added (#31).
 
 ---
 
@@ -113,29 +123,26 @@ cd backend && dotnet test
 | Framework | Angular 18 (standalone components, Signals) |
 | State | NgRx Signals |
 | Styling | Tailwind CSS |
-| Testing | Jasmine · Karma · Cypress |
-| Build | Vite |
+| Testing | Jasmine · Karma |
+| Calendar | FullCalendar Angular packages |
 
 ### Backend
 | | |
 |:--- |:--- |
 | Framework | ASP.NET Core 8 |
-| Architecture | Clean Architecture · CQRS (MediatR) · Event-Driven |
-| Database | SQL Server / PostgreSQL · EF Core · Dapper |
-| Messaging | Apache Kafka |
-| Auth | JWT + OAuth2 (OpenID Connect) |
-| Realtime | SignalR |
-| Logging | Serilog + OpenTelemetry |
-| Testing | xUnit · Moq · Testcontainers |
+| Architecture | Clean Architecture · CQRS (MediatR) |
+| Database | SQL Server / PostgreSQL · EF Core |
+| Messaging | Apache Kafka (where configured) |
+| Auth | JWT (RSA preferred; HS256 via env secret) |
+| Logging | Serilog + OpenTelemetry (where configured) |
+| Testing | xUnit · Moq |
 
 ### DevOps
 | | |
 |:--- |:--- |
 | Containers | Docker · Kubernetes |
-| IaC | Terraform (Azure / AWS) |
 | CI/CD | GitHub Actions |
-| Monitoring | Prometheus · Grafana · Jaeger |
-| Secrets | Azure Key Vault / AWS Secrets Manager |
+| Secrets | Env / User Secrets / Key Vault (do not commit) |
 
 ---
 
@@ -143,104 +150,44 @@ cd backend && dotnet test
 
 | Requirement | Status |
 |:--- |:--- |
-| HIPAA Compliance | ✅ |
-| HITECH Act | ✅ |
-| JWT Authentication | ✅ |
-| Role-Based Access Control | ✅ |
-| PHI Encryption (AES-256 at-rest, TLS in-transit) | ✅ |
-| Immutable Audit Logging | ✅ |
-| OWASP Top 10 Mitigations | ✅ |
-| Dependency Vulnerability Scanning | ✅ |
-| WCAG AA Accessibility | ✅ |
+| HIPAA / HITECH readiness | 🔄 Target — not certified; see hardening issues |
+| JWT Authentication | 🔄 Configured; requires key/secret in non-Dev |
+| Role-Based Access Control | 🔄 Partial |
+| PHI Encryption | 🔄 Keys via env only; rotate any previously committed values |
+| Audit Logging | 🔄 Feature-flagged |
+| CORS | ✅ Config-driven allowlist (no AllowAnyOrigin) |
+| HTTPS / SQL TLS | 🔄 Enforce outside Development; `Encrypt=true` preferred |
 
-→ Details in [`docs/SECURITY.md`](./docs/SECURITY.md) and [`docs/Security/`](./docs/Security/)
+→ Details: [`docs/SECURITY.md`](./docs/SECURITY.md)
+
+**Ops note after secret cleanup:** Any password/key that ever appeared in git history should be treated as compromised and rotated if used outside throwaway local Docker. Purge history with `git filter-repo` / BFG if the repo was public or widely shared.
 
 ---
 
 ## 📖 Documentation
 
-### Core Docs (root `docs/`)
-
 | Document | Purpose |
 |:--- |:--- |
-| [`docs/SECURITY.md`](./docs/SECURITY.md) | HIPAA compliance checklist & encryption standards |
-| [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) | Git workflow, coding standards, PR process |
-
-### Backend Docs
-
-| Folder | Covers |
-|:--- |:--- |
-| [`docs/Backend/Architectures/`](./docs/Backend/Architectures/) | Clean Architecture, Microservices patterns |
-| [`docs/Backend/API-Design/`](./docs/Backend/API-Design/) | REST conventions, versioning, error standards |
-| [`docs/Backend/ASP.NET-Core/`](./docs/Backend/ASP.NET-Core/) | DI, middleware, configuration |
-| [`docs/Backend/C#/`](./docs/Backend/C/) | Async patterns, records, generics |
-| [`docs/Backend/Caching/`](./docs/Backend/Caching/) | Redis & distributed caching |
-| [`docs/Backend/Monitoring/`](./docs/Backend/Monitoring/) | OpenTelemetry, Serilog, health checks |
-| [`docs/Backend/Performance/`](./docs/Backend/Performance/) | DB optimization, async/memory tuning |
-
-### Frontend Docs
-
-| Folder | Covers |
-|:--- |:--- |
-| [`docs/Angular/`](./docs/Angular/) | Components, DI, routing, HTTP Client, security |
-| [`docs/Angular/RxJS/`](./docs/Angular/RxJS/) | Observables, operators (switchMap, mergeMap…) |
-
-### Architecture & Patterns
-
-| Folder | Covers |
-|:--- |:--- |
-| [`docs/SystemDesign/`](./docs/SystemDesign/) | CAP theorem, Event Sourcing, Saga, scalability, Kubernetes |
-| [`docs/DesignPatterns/`](./docs/DesignPatterns/) | Creational, Structural, Behavioral, CQRS, Specification |
-
-### Cross-Cutting
-
-| Folder | Covers |
-|:--- |:--- |
-| [`docs/Database/`](./docs/Database/) | EF Core, Dapper, query optimization, migrations |
-| [`docs/DevOps/`](./docs/DevOps/) | Docker, Kubernetes, CI/CD, Terraform |
-| [`docs/Testing/`](./docs/Testing/) | Unit, integration, E2E testing patterns |
-| [`docs/Security/`](./docs/Security/) | AuthN/AuthZ, OWASP, HIPAA, rate limiting |
-
----
-
-## 🔄 CI/CD Pipeline
-
-```
-Push / PR
-  ├─→ Lint & Type Check (Angular)
-  ├─→ Unit Tests (frontend + backend)
-  ├─→ Integration Tests
-  ├─→ Security Scan (SAST + dependency audit)
-  ├─→ Docker Build & Push
-  └─→ Deploy to Staging  ──(manual approval)──▶  Deploy to Production
-```
-
-Workflow files → [`.github/workflows/`](./.github/workflows/)
-
----
-
-## 🗺 Roadmap
-
-| Phase | Status | Highlights |
-|:--- |:--- |:--- |
-| Phase 1 | ✅ Complete | Patient management, appointments, medical records, prescriptions, basic billing |
-| Phase 2 (Q4 2026) | 🔄 Planned | HL7/FHIR interoperability, advanced analytics, telemedicine, mobile app |
-| Phase 3 (2027) | 🔮 Future | AI-assisted diagnostics, predictive analytics, integration marketplace |
+| [`docs/SECURITY.md`](./docs/SECURITY.md) | Security & secret loading |
+| [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) | Git workflow, standards |
+| [`docs/Backend/`](./docs/Backend/) | ASP.NET, architecture notes |
+| [`docs/Angular/`](./docs/Angular/) | Frontend patterns |
+| [`docs/DevOps/`](./docs/DevOps/) | Docker, CI/CD |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) before opening a PR.
+Please read [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) before opening a PR.
 
 ---
 
 ## 📄 License
 
-MIT — see [`LICENSE`](./LICENSE) for details.
+MIT — see [`LICENSE`](./LICENSE) if present.
 
 ---
 
 <div align="center">
-Built with ❤️ for healthcare &nbsp;·&nbsp; Last Updated: July 2026
+Built for healthcare · Repo: Confidential-solutions/EHR-Systems-Micro
 </div>
