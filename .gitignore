@@ -20,8 +20,6 @@ build/
 
 # Node/npm
 node_modules/
-package-lock.json
-yarn.lock
 npm-debug.log*
 yarn-error.log*
 
@@ -31,11 +29,16 @@ yarn-error.log*
 *.suo
 .nuget/
 
-# Environment
+# Environment — never commit real secrets
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
+.env.development
 .env.development.local
+.env.production
+.env.production.local
 
 # Docker
 .dockerignore
@@ -64,5 +67,7 @@ backend/db/rollback/
 
 # Secrets (never commit these!)
 appsettings.*.json
+!appsettings.json
+!appsettings.Development.json.example
 secrets.json
 launchSettings.json
